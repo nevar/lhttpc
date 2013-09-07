@@ -224,11 +224,18 @@ split_credentials(CredsHostPortPath) ->
             case string:tokens(Creds, ":") of
                 [User] ->
                     % RFC1738 says ":password" is optional
-                    {http_uri:decode(User), "", HostPortPath};
+                    {decode_uri(User), "", HostPortPath};
                 [User, Passwd] ->
-                    {http_uri:decode(User), http_uri:decode(Passwd), HostPortPath}
+                    {decode_uri(User), decode_uri(Passwd), HostPortPath}
             end
     end.
+
+decode_uri([]) ->
+	[];
+decode_uri([$%, A, B | Encoded]) ->
+	[list_to_integer([A, B], 16) | decode_uri(Encoded)];
+decode_uri([Char | Encoded]) ->
+	[Char | decode_uri(Encoded)].
 
 %%------------------------------------------------------------------------------
 %% @private
